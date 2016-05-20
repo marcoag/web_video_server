@@ -68,12 +68,12 @@ LibavStreamer::~LibavStreamer()
     avcodec_close(codec_context_);
   if (frame_)
   {
-#if (LIBAVCODEC_VERSION_MAJOR < 54)
+//#if (LIBAVCODEC_VERSION_MAJOR < 54)
     av_free(frame_);
     frame_ = NULL;
-#else
-    avcodec_free_frame(&frame_);
-#endif
+//#else
+//    avcodec_free_frame(&frame_);
+//#endif
   }
   if (format_context_)
     avformat_free_context(format_context_);
@@ -151,7 +151,7 @@ void LibavStreamer::initialize(const cv::Mat &img)
   codec_context_->time_base.num = 1;
   codec_context_->time_base.den = 1;
   codec_context_->gop_size = gop_;
-  codec_context_->pix_fmt = PIX_FMT_YUV420P;
+  codec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
   codec_context_->max_b_frames = 0;
 
   // Quality settings
@@ -174,7 +174,8 @@ void LibavStreamer::initialize(const cv::Mat &img)
   }
 
   // Allocate frame buffers
-  frame_ = avcodec_alloc_frame();
+  //frame_ = avcodec_alloc_frame();
+  frame_ = av_frame_alloc();
   tmp_picture_ = new AVPicture;
   picture_ = new AVPicture;
   int ret = avpicture_alloc(picture_, codec_context_->pix_fmt, output_width_, output_height_);
@@ -241,7 +242,7 @@ void LibavStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
 #if (LIBAVUTIL_VERSION_MAJOR < 52)
   PixelFormat input_coding_format = PIX_FMT_BGR24;
 #else
-  AVPixelFormat input_coding_format = PIX_FMT_BGR24;
+  AVPixelFormat input_coding_format = AV_PIX_FMT_BGR24;
 #endif
   avpicture_fill(tmp_picture_, img.data, input_coding_format, output_width_, output_height_);
 
